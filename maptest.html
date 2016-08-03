@@ -1,0 +1,19 @@
+<html>
+<head>
+<title>Image map test</title>
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.2/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.2/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="map" style="height: 800px; width: 1200px; background_color: #333333;"></div>
+  <script type="text/javascript">
+    var mymap = L.map('map').setView([0.0, 0.0], 0);
+    L.tileLayer('http://localhost:8080/whistler/{z}/tile-{x}_{y}.png', {
+        attribution: 'Whistler is da man',
+        maxZoom: 3,
+        id: 'your.mapbox.project.id',
+        accessToken: 'your.mapbox.public.access.token'
+    }).addTo(mymap);
+  </script>
+</body>
+</html>
