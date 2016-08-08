@@ -3,17 +3,59 @@
 <title>Image map test</title>
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.2/dist/leaflet.css" />
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.2/dist/leaflet.js"></script>
+<style type="text/css">
+#map {
+  height: 600px;
+  width: 90%;
+  background_color: #333333;
+  /*border: 2px solid black;*/
+}
+body {
+  background-color: #333333;
+}
+</style>
 </head>
 <body>
-  <div id="map" style="height: 800px; width: 1200px; background_color: #333333;"></div>
+  <div id="map" style=""></div>
+
   <script type="text/javascript">
-    var mymap = L.map('map').setView([0.0, 0.0], 0);
-    L.tileLayer('http://localhost:8080/whistler_tiles/{z}/tile-{x}_{y}.png', {
-        attribution: 'Whistler is da man',
-        maxZoom: 3,
-        id: 'your.mapbox.project.id',
-        accessToken: 'your.mapbox.public.access.token'
+    // Todo: get image size from the server somehow...
+    const IMAGE_WIDTH = 30000;
+    const IMAGE_HEIGHT = 18840;
+    const MAX_ZOOM_AVAILABLE = 7;
+    var mymap = L.map('map',{
+      crs: L.CRS.Simple,
+      maxZoom : MAX_ZOOM_AVAILABLE
+    });
+
+    var max_zoom =  mymap.getMaxZoom();
+    var southWest = mymap.unproject([0,IMAGE_HEIGHT], max_zoom);
+    var northEast = mymap.unproject([IMAGE_WIDTH,0], max_zoom);
+    var bound_zoom = mymap.getBoundsZoom([southWest, northEast]);
+    var multiplier = Math.pow(2, max_zoom - bound_zoom);
+    mymap.getContainer().style.width = Math.ceil(IMAGE_WIDTH / multiplier);
+    mymap.getContainer().style.height = Math.ceil(IMAGE_HEIGHT / multiplier);
+    mymap.fitBounds([southWest, northEast]);
+    mymap.options.minZoom = bound_zoom;
+    mymap.invalidateSize();
+
+    var source = "http://localhost:8080/botticelli_tiles/{z}/{y}/{x}.jpg";
+    // source = http://localhost:8080/whistler_tiles/{z}/tile-{x}_{y}.png
+    L.tileLayer(source, {
+      errorTileUrl: 'http://localhost:8080/botticelli_tiles/blank.png',
+      continuousWorld: true,
+      attribution: 'Google Art Project'
     }).addTo(mymap);
+    var handler = (e) => setInfo({
+      zoom_level: mymap.getZoom(),
+      latlng: e.latlng || "undefined"
+    });
+    mymap.on('zoomend', handler);
+    mymap.on('click', handler);
+    function setInfo(info) {
+      let infostr = "zoom level: " + info.zoom_level + "<br/>latlng: " + info.latlng;
+      document.getElementById("info").innerHTML = infostr;
+    }
   </script>
 </body>
 </html>
